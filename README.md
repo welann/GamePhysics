@@ -1,3 +1,13 @@
+# 运行此程序
+
+首先需要安装 `xmake`
+
+随后使用命令 `xmake build` 进行编译
+
+最后使用命令 `xmake run` 运行生成的程序
+
+--------------
+
 # VulkanRenderer
 
 This is a very basic renderer that is meant to be used in conjuction with the [Game Physics In One Weekend book series](https://gamephysicsweekend.github.io/).

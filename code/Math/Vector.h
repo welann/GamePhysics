@@ -382,6 +382,7 @@ inline float Vec3::Dot( const Vec3 & rhs ) const {
 	return temp;
 }
 
+//将原本的vec3归一化，无法取消操作
 inline const Vec3 & Vec3::Normalize() {
 	float mag = GetMagnitude();
 	float invMag = 1.0f / mag;

@@ -50,7 +50,7 @@ Scene::Initialize
 void Scene::Initialize()
 {
     Body body;
-    body.m_position = Vec3(0, 0, 10);
+    body.m_position = Vec3(0, 0, 20);
     body.m_orientation = Quat(0, 0, 0, 1);
     body.m_invMass = 1.0f;
     body.m_shape = new ShapeSphere(1.0f);
@@ -64,19 +64,6 @@ void Scene::Initialize()
     m_bodies.push_back(body);
 }
 
-bool Intersect(const Body* bodyA, const Body* bodyB)
-{
-    const Vec3 ab = bodyB->m_position - bodyA->m_position;
-    const ShapeSphere* sphereA = (const ShapeSphere*)bodyA->m_shape;
-    const ShapeSphere* sphereB = (const ShapeSphere*)bodyB->m_shape;
-
-    const float radiusAB = sphereA->m_radius + sphereB->m_radius;
-    const float lengthSquare = ab.GetLengthSqr();
-    if (lengthSquare <= (radiusAB * radiusAB)) {
-        return true;
-    }
-    return false;
-}
 
 /*
 ====================================================
@@ -99,12 +86,13 @@ void Scene::Update(const float dt_sec)
         for (int j = i + 1; j < m_bodies.size(); j++) {
             Body* bodyA = &m_bodies[i];
             Body* bodyB = &m_bodies[j];
+            // 跳过无限重量的物体
             if (0.0f == bodyA->m_invMass && 0.0f == bodyB->m_invMass) {
                 continue;
             }
-            if (Intersect(bodyA, bodyB)) {
-                bodyA->m_linearVelocity.Zero();
-                bodyB->m_linearVelocity.Zero();
+            contact_t contact;
+            if (Intersect(bodyA, bodyB, contact)) {
+                ResolveContact(contact);
             }
         }
     }
