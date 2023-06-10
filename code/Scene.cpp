@@ -56,6 +56,12 @@ void Scene::Initialize()
     body.m_shape = new ShapeSphere(1.0f);
     m_bodies.push_back(body);
 
+    // body.m_position = Vec3(0, 0, 10);
+    // body.m_orientation = Quat(0, 0, 0, 1);
+    // body.m_invMass = 1.0f;
+    // body.m_shape = new ShapeSphere(1.0f);
+    // m_bodies.push_back(body);
+
     // Add a ” ground ”spherethat won ’ tf a l lunder theinfluenceofg r a v i t y
     body.m_position = Vec3(0, 0, -1000);
     body.m_orientation = Quat(0, 0, 0, 1);
