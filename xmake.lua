@@ -1,3 +1,5 @@
+set_project("GamePhysics")
+
 add_rules("mode.release","mode.debug")
    
 add_includedirs("code")

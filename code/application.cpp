@@ -91,7 +91,7 @@ void Application::Initialize() {
 	m_cameraRadius = 15.0f;
 	m_cameraFocusPoint = Vec3( 0, 0, 3 );
 
-	m_isPaused = true;
+	m_isPaused = false;
 	m_stepFrame = false;
 }
 

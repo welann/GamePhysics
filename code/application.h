@@ -2,6 +2,7 @@
 //  application.h
 //
 #pragma once
+#include <corecrt_wstdio.h>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -26,7 +27,7 @@ Application
 */
 class Application {
 public:
-	Application() : m_isPaused( true ), m_stepFrame( false ) {}
+	Application() : m_isPaused( false ), m_stepFrame( false ) {}
 	~Application();
 
 	void Initialize();
