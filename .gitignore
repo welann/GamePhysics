@@ -1,0 +1,8 @@
+.cache/
+.vs/
+.vscode/
+.xmake/
+build/
+compile_commands.json
+
+x64/

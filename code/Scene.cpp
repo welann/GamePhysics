@@ -52,10 +52,10 @@ void Scene::Initialize() {
 	body.m_shape = new ShapeSphere( 1.0f );
 	m_bodies.push_back( body );
 
-	body.m_position = Vec3( 0, 0, -101 );
-	body.m_orientation = Quat( 0, 0, 0, 1 );
-	body.m_shape = new ShapeSphere( 100.0f );
-	m_bodies.push_back( body );
+	// body.m_position = Vec3( 0, 0, -101 );
+	// body.m_orientation = Quat( 0, 0, 0, 1 );
+	// body.m_shape = new ShapeSphere( 100.0f );
+	// m_bodies.push_back( body );
 
 	// TODO: Add code
 }

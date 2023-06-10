@@ -119,7 +119,9 @@ void Application::InitializeGLFW() {
 	glfwSetWindowUserPointer( m_glfwWindow, this );
 	glfwSetWindowSizeCallback( m_glfwWindow, Application::OnWindowResized );
 
-	glfwSetInputMode( m_glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+	//glfwPollEvents();
+
+	// glfwSetInputMode( m_glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
 	glfwSetInputMode( m_glfwWindow, GLFW_STICKY_KEYS, GLFW_TRUE );
 	glfwSetCursorPosCallback( m_glfwWindow, Application::OnMouseMoved );
 	glfwSetScrollCallback( m_glfwWindow, Application::OnMouseWheelScrolled );
@@ -420,6 +422,11 @@ Application::OnKeyboard
 void Application::OnKeyboard( GLFWwindow * window, int key, int scancode, int action, int modifiers ) {
 	Application * application = reinterpret_cast< Application * >( glfwGetWindowUserPointer( window ) );
 	application->Keyboard( key, scancode, action, modifiers );
+	
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, true);
+
+	}
 }
 
 /*
