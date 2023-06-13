@@ -54,12 +54,13 @@ void Scene::Initialize()
     body.m_orientation = Quat(0, 0, 0, 1);
     body.m_invMass = 10.0f;
     body.m_elasticity = 0.9f;
+    body.m_linearVelocity=Vec3(0,0,-10 );
     body.m_shape = new ShapeSphere(1.0f);
     m_bodies.push_back(body);
 
     body.m_position = Vec3(0, 0, 10);
     body.m_orientation = Quat(0, 0, 0, 1);
-    body.m_invMass = 1.0f;
+    body.m_invMass = 0.1f;
     body.m_elasticity = 0.9f;
     body.m_shape = new ShapeSphere(1.0f);
     m_bodies.push_back(body);
@@ -67,10 +68,68 @@ void Scene::Initialize()
     // Add a ” ground ”spherethat won ’ tf a l lunder theinfluenceofg r a v i t y
     body.m_position = Vec3(0, 0, -1000);
     body.m_orientation = Quat(0, 0, 0, 1);
+    body.m_linearVelocity = Vec3(0, 0, 0);
     body.m_invMass = 0.0f;
     body.m_elasticity = 1.0f;
+    body.m_linearVelocity=Vec3(0,0,0 );
+    body.m_friction = 0.0f;
     body.m_shape = new ShapeSphere(1000.0f);
     m_bodies.push_back(body);
+    // Dynamic Bodies
+    // Body body;
+	// for ( int x = 0; x < 6; x++ ) {
+	// 	for ( int y = 0; y < 6; y++ ) {
+	// 		float radius = 0.5f;
+	// 		float xx = float( x - 1.5 ) * radius * 1.5f;
+	// 		float yy = float( y - 1.8 ) * radius * 1.5f;
+	// 		body.m_position = Vec3( xx, yy, 10.0f*x/5 );
+	// 		body.m_orientation = Quat( 0, 0, 0, 1 );
+	// 		body.m_linearVelocity.Zero();
+	// 		body.m_invMass = 1.0f;
+	// 		body.m_elasticity = 0.5f;
+	// 		body.m_friction = 0.5f;
+	// 		body.m_shape = new ShapeSphere( radius );
+	// 		m_bodies.push_back( body );
+	// 	}
+	// }
+
+	// // Static "floor"
+	// for ( int x = 0; x < 3; x++ ) {
+	// 	for ( int y = 0; y < 3; y++ ) {
+	// 		float radius = 80.0f;
+	// 		float xx = float( x - 1 ) * radius * 0.25f;
+	// 		float yy = float( y - 1 ) * radius * 0.25f;
+	// 		body.m_position = Vec3( xx, yy, -radius );
+	// 		body.m_orientation = Quat( 0, 0, 0, 1 );
+	// 		body.m_linearVelocity.Zero();
+	// 		body.m_invMass = 0.0f;
+	// 		body.m_elasticity = 0.99f;
+	// 		body.m_friction = 0.5f;
+	// 		body.m_shape = new ShapeSphere( radius );
+	// 		m_bodies.push_back( body );
+	// 	}
+	// }
+}
+
+/*
+====================================================
+CompareContacts
+====================================================
+*/
+int CompareContacts(const void* p1, const void* p2)
+{
+    contact_t a = *(contact_t*)p1;
+    contact_t b = *(contact_t*)p2;
+
+    if (a.timeOfImpact < b.timeOfImpact) {
+        return -1;
+    }
+
+    if (a.timeOfImpact == b.timeOfImpact) {
+        return 0;
+    }
+
+    return 1;
 }
 
 /*
@@ -90,6 +149,10 @@ void Scene::Update(const float dt_sec)
         body->ApplyImpulseLinear(impulseGravity);
     }
 
+    int numContacts = 0;
+    const int maxContacts = m_bodies.size() * m_bodies.size();
+    contact_t* contacts = (contact_t*)alloca(sizeof(contact_t) * maxContacts);
+
     for (int i = 0; i < m_bodies.size(); i++) {
         for (int j = i + 1; j < m_bodies.size(); j++) {
             Body* bodyA = &m_bodies[i];
@@ -99,15 +162,49 @@ void Scene::Update(const float dt_sec)
                 continue;
             }
             contact_t contact;
-            if (Intersect(bodyA, bodyB, contact)) {
-                ResolveContact(contact);
+            if (Intersect(bodyA, bodyB, dt_sec, contact)) {
+                // ResolveContact(contact);
+                contacts[numContacts] = contact;
+                numContacts++;
             }
         }
     }
 
-    for (int i = 0; i < m_bodies.size(); i++) {
-        // Position update
-        // m_bodies[i].m_position += m_bodies[i].m_linearVelocity * dt_sec;
-        m_bodies[i].Update(dt_sec);
+    // Sort the times of impact from first to last
+    if (numContacts > 1) {
+        qsort(contacts, numContacts, sizeof(contact_t), CompareContacts);
+    }
+
+    //
+    // Apply ballistic impulses
+    //
+    float accumulatedTime = 0.0f;
+    for (int i = 0; i < numContacts; i++) {
+        contact_t& contact = contacts[i];
+        const float dt = contact.timeOfImpact - accumulatedTime;
+
+        Body* bodyA = contact.bodyA;
+        Body* bodyB = contact.bodyB;
+
+        // 跳过无限重量的物体
+        if (0.0f == bodyA->m_invMass && 0.0f == bodyB->m_invMass) {
+            continue;
+        }
+
+        // position update
+        for (int j = 0; j < m_bodies.size(); j++) {
+            m_bodies[j].Update(dt);
+        }
+
+        ResolveContact(contact);
+        accumulatedTime += dt;
+    }
+
+    // Update the positions for the rest of this frame's time
+    const float timeRemaining = dt_sec - accumulatedTime;
+    if (timeRemaining > 0.0f) {
+        for (int i = 0; i < m_bodies.size(); i++) {
+            m_bodies[i].Update(timeRemaining);
+        }
     }
 }

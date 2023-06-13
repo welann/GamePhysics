@@ -40,21 +40,50 @@ void ResolveContact(contact_t& contact)
     const Vec3 velB = body2->m_linearVelocity + body2->m_angularVelocity.Cross(rb);
 
     // Calculate the collision impulse
-    const Vec3 vab = body1->m_linearVelocity - body2->m_linearVelocity;
-    const float ImpulseJ = -(1.0f + elasticity) * vab.Dot(n) / (invMass1 + invMass2 + angularFactor);
+    const Vec3 vab = velA - velB;
+    const float ImpulseJ = (1.0f + elasticity) * vab.Dot(n) / (invMass1 + invMass2 + angularFactor);
     const Vec3 vectorImpulseJ = n * ImpulseJ;
 
-    body1->ApplyImpulseLinear(vectorImpulseJ * 1.0f);
-    body2->ApplyImpulseLinear(vectorImpulseJ * -1.0f);
+    body1->ApplyImpulse(ptOnA, vectorImpulseJ * -1.0f);
+    body2->ApplyImpulse(ptOnB, vectorImpulseJ * 1.0f);
 
-    // body1->m_linearVelocity.Zero();
-    // body2->m_linearVelocity.Zero();
+    //
+    // Calculate the impulse caused by friction
+    //
 
-    // p33
-    const float tA = body1->m_invMass / (body1->m_invMass + body2->m_invMass);
-    const float tB = body1->m_invMass / (body1->m_invMass + body2->m_invMass);
+    const float frictionA = body1->m_friction;
+    const float frictionB = body2->m_friction;
+    const float friction = frictionA * frictionB;
 
-    const Vec3 ds = contact.ptOnB_WorldSpace - contact.ptOnA_WorldSpace;
-    body1->m_position += ds * tA;
-    body1->m_position -= ds * tB;
+    // Find the normal direction of the velocity with respect to the normal of the collision
+    const Vec3 velNorm = n * n.Dot(vab);
+
+    // Find the tangent direction of the velocity with respect to the normal of the collision
+    const Vec3 velTang = vab - velNorm;
+
+    // Get the tangential velocities relative to the other body
+    Vec3 relativeVelTang = velTang;
+    relativeVelTang.Normalize();
+
+    const Vec3 inertiaA = (invWorldInertiaA * ra.Cross(relativeVelTang)).Cross(ra);
+    const Vec3 inertiaB = (invWorldInertiaB * rb.Cross(relativeVelTang)).Cross(rb);
+    const float invInertia = (inertiaA + inertiaB).Dot(relativeVelTang);
+
+    // Calculate the tangential impulse for friction
+    const float reducedMass = 1.0f / (body1->m_invMass + body2->m_invMass + invInertia);
+    const Vec3 impulseFriction = velTang * reducedMass * friction;
+
+    body1->ApplyImpulse(ptOnA, impulseFriction * -1.0f);
+    body2->ApplyImpulse(ptOnB, impulseFriction * 1.0f);
+
+    if (contact.timeOfImpact == 0.0f) {
+        const Vec3 ds = ptOnB - ptOnA;
+
+        // p33
+        const float tA = invMass1 / (invMass1 + invMass2);
+        const float tB = invMass2 / (invMass1 + invMass2);
+
+        body1->m_position += ds * tA;
+        body1->m_position -= ds * tB;
+    }
 }

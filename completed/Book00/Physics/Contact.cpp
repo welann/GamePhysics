@@ -8,7 +8,7 @@
 ResolveContact
 ====================================================
 */
-void ResolveContact( contact_t & contact ) {
+void ResolveContact1( contact_t & contact ) {
 	Body * bodyA = contact.bodyA;
 	Body * bodyB = contact.bodyB;
 
