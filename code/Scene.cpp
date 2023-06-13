@@ -50,12 +50,12 @@ Scene::Initialize
 void Scene::Initialize()
 {
     Body body;
-    // body.m_position = Vec3(0, 0, 50);
-    // body.m_orientation = Quat(0, 0, 0, 1);
-    // body.m_invMass = 10.0f;
-    // body.m_elasticity = 0.9f;
-    // body.m_shape = new ShapeSphere(1.0f);
-    // m_bodies.push_back(body);
+    body.m_position = Vec3(0, 0, 15);
+    body.m_orientation = Quat(0, 0, 0, 1);
+    body.m_invMass = 10.0f;
+    body.m_elasticity = 0.9f;
+    body.m_shape = new ShapeSphere(1.0f);
+    m_bodies.push_back(body);
 
     body.m_position = Vec3(0, 0, 10);
     body.m_orientation = Quat(0, 0, 0, 1);
@@ -106,7 +106,8 @@ void Scene::Update(const float dt_sec)
     }
 
     for (int i = 0; i < m_bodies.size(); i++) {
-        // Positionupdate
-        m_bodies[i].m_position += m_bodies[i].m_linearVelocity * dt_sec;
+        // Position update
+        // m_bodies[i].m_position += m_bodies[i].m_linearVelocity * dt_sec;
+        m_bodies[i].Update(dt_sec);
     }
 }
