@@ -84,6 +84,6 @@ void ResolveContact(contact_t& contact)
         const float tB = invMass2 / (invMass1 + invMass2);
 
         body1->m_position += ds * tA;
-        body1->m_position -= ds * tB;
+        body2->m_position -= ds * tB;
     }
 }
